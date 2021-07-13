@@ -12,6 +12,7 @@ from flask import session
 from hmrc_provider import make_hmrc_blueprint, hmrc
 
 import pandas as pd
+import logging
 
 
 app = Flask(__name__, static_url_path='')
@@ -140,22 +141,23 @@ def obligations(show_all=False):
 
 
 def return_data(period_key, period_end, vat_csv):
+    logging.error(vat_csv)
     df = pd.read_csv(vat_csv)
-    assert list(df.columns) == ["VAT period", "SUM of Fee", "SUM of VAT", "VAT rate"]
+    assert list(df.columns) == ["VAT period", "Sales", "Purchases", "VAT rate"]
 
     period = df[df["VAT period"] == period_end]
-    net_fee = int(period["SUM of Fee"].iloc[0])
-    vat = int(period["SUM of VAT"].iloc[0])
+    sales = float(period["Sales"].iloc[0])
+    purchases = float(period["Purchases"].iloc[0])
     vat_rate = float(period["VAT rate"].iloc[0]) / 100
-    gross_receipts = net_fee + vat
-    vat_due = round(gross_receipts * vat_rate, 2)
-    box_1 = vat_due
-    box_2 = 0  # vat due on acquisitions
+    vat_sales = round(sales * vat_rate, 2)
+    vat_reclaimed = round(purchases * vat_rate, 2) 
+    box_1 = vat_sales # box_1, vat due on sales
+    box_2 = 0 # vat due on acquisitions
     box_3 = box_1 + box_2  # total vat due - calculated: Box1 + Box2
-    box_4 = 0  # vat reclaimed for current period
+    box_4 = vat_reclaimed  # vat reclaimed for current period
     box_5 = abs(box_3 - box_4)  # net vat due (amount to be paid). Calculated: take the figures from Box 3 and Box 4. Deduct the smaller figure from the larger one and use the difference
-    box_6 = gross_receipts  # total value sales ex vat
-    box_7 = 0  # total value purchases ex vat
+    box_6 = sales  # total value sales ex vat
+    box_7 = purchases  # total value purchases ex vat
     box_8 = 0  # total value goods supplied ex vat
     box_9 = 0  # total acquisitions ex vat
     data = {
