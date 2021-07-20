@@ -106,6 +106,7 @@ def do_action(action, endpoint, params={}, data={}):
     url = "/organisations/vat/{}/{}".format(
         session['hmrc_vat_number'], endpoint)
     if action == 'get':
+        # logging.warn(url)
         response = hmrc.get(url, params=params, headers=get_fraud_headers())
     elif action == 'post':
         response = hmrc.post(url, json=data, headers=get_fraud_headers())
@@ -132,7 +133,10 @@ def obligations(show_all=False):
         }
     else:
         params = {'status': 'O'}
-    obligations = do_action('get', 'obligations', params)
+        # returns = do_action('get', 'returns/18A1', {})
+        # logging.warn(json.dumps(returns, indent = 4))
+        obligations = do_action('get', 'obligations', params)
+        logging.warn(json.dumps(obligations, indent = 4))
     if 'error' in obligations:
         g.error = obligations['error']
     else:
@@ -190,6 +194,7 @@ def preview_return(period_key):
 @app.route("/<string:period_key>/send", methods=('POST',))
 @login_required
 def send_return(period_key):
+    # logging.warn(period_key)
     confirmed = request.form.get('complete', None)
     vat_csv = request.form.get('vat_csv')
     g.period_end = request.form.get('period_end', '')
@@ -214,8 +219,9 @@ def logout():
 
 def create_test_user():
     url = '/create-test-user/individuals'
+    api_host=app.config['HMRC_API_HOST']
     return requests.post(
-        API_HOST + url,
+        api_host + url,
         data={
             "serviceNames": [
                 "national-insurance",
