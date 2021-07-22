@@ -29,8 +29,9 @@ Nothing is stored in the app - the data is fetched from a CSV at a URL you defin
 
 Set environment variables, then:
 
-    HMRC_OAUTH_CLIENT_ID=? HMRC_OAUTH_CLIENT_SECRET=? HMRC_API_HOST=https://test-api.service.hmrc.gov.uk/ OAUTHLIB_INSECURE_TRANSPORT=1 FLASK_DEBUG=1 FLASK_APP=vatreturn.py flask run
-
+```
+HMRC_OAUTH_CLIENT_ID=? HMRC_OAUTH_CLIENT_SECRET=? HMRC_API_HOST=https://test-api.service.hmrc.gov.uk/ OAUTHLIB_INSECURE_TRANSPORT=1 FLASK_DEBUG=1 FLASK_APP=vatreturn.py DEVICE_ID=? LOCAL_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'` USER_ID=? flask run
+```
 
 # Google Sheets format
 

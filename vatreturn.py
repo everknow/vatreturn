@@ -10,6 +10,7 @@ from flask import render_template, g
 from flask import request
 from flask import session
 from hmrc_provider import make_hmrc_blueprint, hmrc
+from urllib.parse import unquote, quote
 
 import pandas as pd
 import logging
@@ -84,20 +85,26 @@ def get_fraud_headers():
             'user_timezone', None),
         'Gov-Client-Window-Size': request.cookies.get(
             'client_window', None),
-        'Gov-Client-Browser-JS-User-Agent': request.cookies.get(
-            'client_user_agent', None),
-        'Gov-Client-Browser-Plugins': request.cookies.get(
-            'client_browser_plugins', None),
+        'Gov-Client-Browser-JS-User-Agent': unquote( request.cookies.get(
+            'client_user_agent', None) ),
+        'Gov-Client-Browser-Plugins': ",".join(map(quote, unquote(request.cookies.get(
+            'client_browser_plugins', None)[:-1]).split(","))),
         'Gov-Client-Browser-Do-Not-Track': request.cookies.get(
             'client_do_not_track', None),
         'Gov-Client-Screens': request.cookies.get(
             'client_screens', None),
-        'Gov-Client-Device-ID': request.cookies.get(
-            'device_id', None),
-        'Gov-Vendor-Version': 'v=0.1',
+        'Gov-Client-Device-ID': os.environ.get("DEVICE_ID"), # was request.cookies.get('device_id', None),
+        'Gov-Vendor-Version': 'vatreturn-frontend=1.0&vatreturn-bacckend=1.0',
         'Gov-Vendor-Public-IP': None,  # hosted in Heroku, will change
-        'Gov-Client-User-IDs': None,  # not available
-        'Gov-Vendor-Public-Port': None
+        'Gov-Client-User-IDs': "vatreturn="+os.environ.get("USER_ID"),
+        'Gov-Vendor-Public-Port': None,
+        'Gov-Client-Local-IPs': os.environ.get("LOCAL_IP"),
+        'Gov-Client-Local-IPs-Timestamp': request.cookies.get(
+            'client-local-timestamp', None),
+        'Gov-Client-Public-IP-Timestamp': request.cookies.get(
+            'client-local-timestamp', None),
+        'Gov-Vendor-Product-Name': 'vatreturn',
+        
     }
     return dict([(k, v) for k, v in headers.items() if v])
 
@@ -133,6 +140,13 @@ def obligations(show_all=False):
         }
     else:
         params = {'status': 'O'}
+        
+        # uncomment the following 3 lines to debug the fraud headers
+        # logging.warn(json.dumps(get_fraud_headers(), indent = 4))
+        # r = hmrc.get('test/fraud-prevention-headers/validate', params={}, headers=get_fraud_headers())
+        # logging.warn(json.dumps(r.json(), indent = 4))
+        
+        # uncomment the following 2 lines to retrieve a submitted return
         # returns = do_action('get', 'returns/18A1', {})
         # logging.warn(json.dumps(returns, indent = 4))
         obligations = do_action('get', 'obligations', params)
@@ -145,7 +159,7 @@ def obligations(show_all=False):
 
 
 def return_data(period_key, period_end, vat_csv):
-    logging.error(vat_csv)
+    # logging.warn(vat_csv)
     df = pd.read_csv(vat_csv)
     assert list(df.columns) == ["VAT period", "Sales", "Purchases", "VAT rate"]
 
