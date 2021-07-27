@@ -79,8 +79,8 @@ def get_fraud_headers():
     # injected into any form as hidden fields by javascript
     headers = {
         'Gov-Client-Connection-Method': 'WEB_APP_VIA_SERVER',
-        'Gov-Client-Public-IP': request.cookies.get(
-            'public_ip', None),
+        # 'Gov-Client-Public-IP': request.cookies.get(
+        #     'public_ip', None),
         'Gov-Client-Timezone': request.cookies.get(
             'user_timezone', None),
         'Gov-Client-Window-Size': request.cookies.get(
@@ -101,8 +101,8 @@ def get_fraud_headers():
         'Gov-Client-Local-IPs': os.environ.get("LOCAL_IP"),
         'Gov-Client-Local-IPs-Timestamp': request.cookies.get(
             'client-local-timestamp', None),
-        'Gov-Client-Public-IP-Timestamp': request.cookies.get(
-            'client-local-timestamp', None),
+        # 'Gov-Client-Public-IP-Timestamp': request.cookies.get(
+        #     'client-local-timestamp', None),
         'Gov-Vendor-Product-Name': 'vatreturn',
         
     }
