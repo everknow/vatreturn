@@ -79,8 +79,6 @@ def get_fraud_headers():
     # injected into any form as hidden fields by javascript
     headers = {
         'Gov-Client-Connection-Method': 'WEB_APP_VIA_SERVER',
-        # 'Gov-Client-Public-IP': request.cookies.get(
-        #     'public_ip', None),
         'Gov-Client-Timezone': request.cookies.get(
             'user_timezone', None),
         'Gov-Client-Window-Size': request.cookies.get(
@@ -93,17 +91,21 @@ def get_fraud_headers():
             'client_do_not_track', None),
         'Gov-Client-Screens': request.cookies.get(
             'client_screens', None),
-        'Gov-Client-Device-ID': os.environ.get("DEVICE_ID"), # was request.cookies.get('device_id', None),
-        'Gov-Vendor-Version': 'vatreturn-frontend=1.0&vatreturn-bacckend=1.0',
-        'Gov-Vendor-Public-IP': None,  # hosted in Heroku, will change
-        'Gov-Client-User-IDs': "vatreturn="+os.environ.get("USER_ID"),
-        'Gov-Vendor-Public-Port': None,
-        'Gov-Client-Local-IPs': os.environ.get("LOCAL_IP"),
         'Gov-Client-Local-IPs-Timestamp': request.cookies.get(
             'client-local-timestamp', None),
+
+        'Gov-Client-Device-ID': os.environ.get("DEVICE_ID"), # was request.cookies.get('device_id', None),
+        'Gov-Vendor-Version': 'vatreturn-frontend=1.0&vatreturn-backend=1.0',
+        'Gov-Client-User-IDs': "vatreturn="+os.environ.get("USER_ID"),
+        'Gov-Client-Local-IPs': os.environ.get("LOCAL_IP"),
+        'Gov-Vendor-Product-Name': 'vatreturn',
+
+        # 'Gov-Vendor-Public-Port': None,
+        # 'Gov-Vendor-Public-IP': None,  # hosted in Heroku, will change
+        # 'Gov-Client-Public-IP': request.cookies.get(
+        #     'public_ip', None),
         # 'Gov-Client-Public-IP-Timestamp': request.cookies.get(
         #     'client-local-timestamp', None),
-        'Gov-Vendor-Product-Name': 'vatreturn',
         
     }
     return dict([(k, v) for k, v in headers.items() if v])
