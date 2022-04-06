@@ -15,12 +15,16 @@ from urllib.parse import unquote, quote
 import pandas as pd
 import logging
 
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_url_path='')
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
 app.config["HMRC_OAUTH_CLIENT_ID"] = os.environ.get("HMRC_OAUTH_CLIENT_ID")
 app.config["HMRC_OAUTH_CLIENT_SECRET"] = os.environ.get("HMRC_OAUTH_CLIENT_SECRET")
 app.config["HMRC_API_HOST"] = os.environ.get("HMRC_API_HOST")
+
+# logger.warning(app.config)
+
 hmrc_bp = make_hmrc_blueprint(
     api_host=app.config['HMRC_API_HOST'],
     scope='read:vat write:vat',
@@ -152,7 +156,7 @@ def obligations(show_all=False):
         # returns = do_action('get', 'returns/18A1', {})
         # logging.warn(json.dumps(returns, indent = 4))
         obligations = do_action('get', 'obligations', params)
-        logging.warn(json.dumps(obligations, indent = 4))
+        logging.warning(json.dumps(obligations, indent = 4))
     if 'error' in obligations:
         g.error = obligations['error']
     else:
@@ -234,10 +238,10 @@ def logout():
 
 
 def create_test_user():
-    url = '/create-test-user/individuals'
+    url = 'create-test-user/individuals'
     api_host=app.config['HMRC_API_HOST']
     return requests.post(
-        api_host + url,
+        os.path.join(api_host, url),
         data={
             "serviceNames": [
                 "national-insurance",

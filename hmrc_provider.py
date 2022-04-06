@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+import os
 
 from flask_dance.consumer import OAuth2ConsumerBlueprint
 from flask_dance.consumer.requests import OAuth2Session
@@ -66,9 +66,9 @@ def make_hmrc_blueprint(
         client_secret=client_secret,
         scope=scope,
         base_url=api_host,
-        authorization_url=api_host + "/oauth/authorize",
-        token_url=api_host + "/oauth/token",
-        auto_refresh_url=api_host + "/oauth/token",
+        authorization_url=os.path.join(api_host, "oauth/authorize"),
+        token_url=os.path.join(api_host, "oauth/token"),
+        auto_refresh_url=os.path.join(api_host, "oauth/token"),
         auto_refresh_kwargs={'client_id': client_id, 'client_secret': client_secret},
         redirect_url=redirect_url,
         redirect_to=redirect_to,
