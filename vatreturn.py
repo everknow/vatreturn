@@ -148,15 +148,15 @@ def obligations(show_all=False):
         params = {'status': 'O'}
         
         # uncomment the following 3 lines to debug the fraud headers
-        # logging.warn(json.dumps(get_fraud_headers(), indent = 4))
+        # logging.warning(json.dumps(get_fraud_headers(), indent=4))
         # r = hmrc.get('test/fraud-prevention-headers/validate', params={}, headers=get_fraud_headers())
-        # logging.warn(json.dumps(r.json(), indent = 4))
+        # logging.warning(json.dumps(r.json(), indent=4))
         
         # uncomment the following 2 lines to retrieve a submitted return
         # returns = do_action('get', 'returns/18A1', {})
         # logging.warn(json.dumps(returns, indent = 4))
         obligations = do_action('get', 'obligations', params)
-        logging.warning(json.dumps(obligations, indent = 4))
+        # logging.warning(json.dumps(obligations, indent=4))
     if 'error' in obligations:
         g.error = obligations['error']
     else:
@@ -167,23 +167,17 @@ def obligations(show_all=False):
 def return_data(period_key, period_end, vat_csv):
     # logging.warn(vat_csv)
     df = pd.read_csv(vat_csv)
-    assert list(df.columns) == ["VAT period", "Sales", "Purchases", "VAT rate"]
-
+    assert list(df.columns) == ["VAT period", "box1", "box2", "box4", "box6", "box7", "box8", "box9"]
     period = df[df["VAT period"] == period_end]
-    sales = float(period["Sales"].iloc[0])
-    purchases = float(period["Purchases"].iloc[0])
-    vat_rate = float(period["VAT rate"].iloc[0]) / 100
-    vat_sales = round(sales * vat_rate, 2)
-    vat_reclaimed = round(purchases * vat_rate, 2) 
-    box_1 = vat_sales # box_1, vat due on sales
-    box_2 = 0 # vat due on acquisitions
-    box_3 = box_1 + box_2  # total vat due - calculated: Box1 + Box2
-    box_4 = vat_reclaimed  # vat reclaimed for current period
-    box_5 = abs(box_3 - box_4)  # net vat due (amount to be paid). Calculated: take the figures from Box 3 and Box 4. Deduct the smaller figure from the larger one and use the difference
-    box_6 = sales  # total value sales ex vat
-    box_7 = purchases  # total value purchases ex vat
-    box_8 = 0  # total value goods supplied ex vat
-    box_9 = 0  # total acquisitions ex vat
+    box_1 = float(period["box1"].iloc[0])  # VAT due in the period on sales and other outputs
+    box_2 = float(period["box2"].iloc[0])  # VAT due in the period on acquisitions of goods made in Northern Ireland from EU Member States
+    box_3 = box_1 + box_2  # total VAT due - calculated: Box1 + Box2
+    box_4 = float(period["box4"].iloc[0])  # VAT reclaimed in the period on purchases and other inputs (including acquisitions from the EU)
+    box_5 = abs(box_3 - box_4)  # net VAT to pay to HMRC or reclaim
+    box_6 = round(float(period["box6"].iloc[0]))  # total value of sales and all other outputs excluding any VAT
+    box_7 = round(float(period["box7"].iloc[0]))  # the total value of purchases and all other inputs excluding any VAT
+    box_8 = round(float(period["box8"].iloc[0]))  # total value of all supplies of goods and related costs, excluding any VAT, to EU member states
+    box_9 = round(float(period["box9"].iloc[0]))  # total value of all acquisitions of goods and related costs, excluding any VAT, from EU member states
     data = {
         "periodKey": period_key,
         "vatDueSales": box_1,
@@ -197,6 +191,7 @@ def return_data(period_key, period_end, vat_csv):
         "totalAcquisitionsExVAT": box_9,
         "finalised": True  # declaration
     }
+    # logger.warning(json.dumps(data, indent=4))
     return data
 
 
